@@ -1,65 +1,113 @@
-<<<<<<< HEAD
 <?php
+if (isset($_POST['submit'])) {
+  require 'PasswordHash.php';
 
-require 'PasswordHash.php';
+  //TODO error checking (ie failed database connection), input validation/sanitation, response
 
-//TODO error checking (ie failed database connection), input validation/sanitation, response
+  //TODO Possibly move to config file
+  $databaseHost = '127.0.0.1';
+  //$databaseUsername = 'team14';
+  //$databasePassword = 'teal';
+  $databaseUsername = 'root';
+  $databasePassword = 'rooty';
+  $databaseName = 'team_project_2';
+  //base 2 logarithm used in bcrypt security, higher means more stretching done
+  $hashCost = 8;
+  //force using built-in functions for portability?
+  $portable = false;
 
-//TODO Possibly move to config file
-$databaseHost = '127.0.0.1';
-//$databaseUsername = 'team14';
-//$databasePassword = 'teal';
-$databaseUsername = 'root';
-$databasePassword = 'rooty';
-$databaseName = 'team_project_2';
-//base 2 logarithm used in bcrypt security, higher means more stretching done
-$hashCost = 8;
-//force using built-in functions for portability?
-$portable = false;
+  $firstName = $_POST['firstName'];
+  $lastName = $_POST['lastName'];
+  $email = $_POST['email'];
+  $password = $_POST['password'];//max length 72
+  $password2 = $_POST['password2'];
+  $gender = $_POST['gender'];
+  $birthMonth = $_POST['birthMonth'];
+  $birthDay = $_POST['birthDay'];
+  $birthYear = $_POST['birthYear'];
+  
+  $errorMessage = '';
+  
+  //Name max 50 characters each, TODO further validation: not empty, not whitespace, etc.
+  if (strlen($firstName) > 50) {
+    $errorMessage .= 'First name may be a maximum of 50 characters<br>';
+  }
+  if (strlen($lastName) > 50) {
+    $errorMessage .= 'Last name may be a maximum of 50 characters<br>';
+  }
+  if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errorMessage .= 'Email invalid<br>';
+  }
+  //password max length 72, 1 and 2 has to be the same, TODO further validation: not empty
+  if (strlen($password) > 72) {
+    $errorMessage .= 'Password can have a maximum length of 72 characters<br>';
+  }
+  else if ($password !== $password2) {
+    $errorMessage .= 'Password must match in both fields<br>';
+  }
+  //convert gender from string value to int
+  if ($gender == 'undisclosed') {
+    $gender = 0;
+  }
+  else if ($gender == 'male') {
+    $gender = 1;
+  }
+  else if ($gender == 'female') {
+    $gender = 2;
+  }
+  else {
+    $errorMessage .= 'Error validating gender<br>';
+  }
+  //validate date, TODO restrict age range, check if empty
+  if (!checkdate($birthMonth, $birthDay, $birthYear)) {
+    $errorMessage .= 'Invalid birthday<br>';
+  }
+  
+  if ($errorMessage === '') {
 
-$firstName = $_POST['firstName'];
-$lastName = $_POST['lastName'];
-$email = $_POST['email'];
-$password = $_POST['password'];//max length 72
-$password2 = $_POST['password2'];
-$gender = $_POST['gender'];
-$birthday = $_POST['birthday'];
+    //create database connection
+    $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
 
-//create database connection
-$database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
+    $hasher = new PasswordHash($hashCost, $portable);
 
-$hasher = new PasswordHash($hashCost, $portable);
+    $hash = $hasher->HashPassword($password);//min length 20
+    unset($hasher);
 
-$hash = $hasher->HashPassword($password);//min length 20
-unset($hasher);
+    $var = 0;//TODO handle user_id and gender, get rid of this variable
 
-$var = 0;//TODO handle user_id and gender, get rid of this variable
+    $statement = $database->prepare('insert into user_info values (?, ?, ?, ?, ?, ?, ?)'); //TODO make certain parameters correspond to database
+    $statement->bind_param('issssis', $var, $hash, $email, $firstName, $lastName, $var, $birthday);//TODO handle user_id and gender
+    $statement->execute();
+    $statement->close();
 
-$statement = $database->prepare('insert into user_info values (?, ?, ?, ?, ?, ?, ?)');
-$statement->bind_param('issssis', $var, $hash, $email, $firstName, $lastName, $var, $birthday);
-$statement->execute();
-$statement->close();
-
-$database->close();
-
-echo "Done.";
-
+    $database->close();
+  }
+}
 ?>
-=======
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Create a new account</title>
 <link rel="stylesheet" href="register.css">
 <h1>Social Network</h1>
 <h2>Register a new account</h2>
-<form action="#" method="post">
+<?php
+  if (isset($_POST['submit'])) {
+    if ($errorMessage === '') {
+      echo 'Registration successful';
+    }
+    else {
+      echo $errorMessage;
+    }
+  }
+?>
+<form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post">
   <ol>
     <li>
-      <label for="first_name">First name</label>
-      <input type="text" name="first_name" id="first_name">
+      <label for="firstName">First name</label>
+      <input type="text" name="firstName" id="firstName">
     <li>
-      <label for="last_name">Last name</label>
-      <input type="text" name="last_name" id="last_name">
+      <label for="lastName">Last name</label>
+      <input type="text" name="lastName" id="lastName">
     <li>
       <label for="email">Email address</label>
       <input type="text" name="email" id="email">
@@ -75,45 +123,32 @@ echo "Done.";
         <option value="undisclosed" selected="selected">Undisclosed</option>
         <option value="female">Female</option>
         <option value="male">Male</option>
-        <option value="other">Other</option>
       </select>
     <li>
-      <label for="birthday">Birthday (Optional)</label>
-      <select name="agemonth" id="month">
-        <option value="" selected="selected">Month</option>
-        <option value="1">January</option>
-        <option value="2">February</option>
-        <option value="3">March</option>
-        <option value="4">April</option>
-        <option value="5">May</option>
-        <option value="6">June</option>
-        <option value="7">July</option>
-        <option value="8">August</option>
-        <option value="9">September</option>
-        <option value="10">October</option>
-        <option value="11">November</option>
-        <option value="12">December</option>
-      </select>
-      <select name="ageday" id="day">
-        <option value="" selected="selected">Day</option>
-        <?php
-        for($i=1;$i<32;$i++){ //This is not a smart month checker. We can validate month/day after this page.
-          echo "<option value=\"$i\">$i</option>";
-        }
-        ?>
-      </select>
-      <select>
-        <?php
-        for($i=1900;$i<2013;$i++){ //Yes, this covers a very...comprehensive age range.
-          echo "<option value=\"$i\">$i</option>";
-        }
-        ?>
-      </select>
+      <fieldset>
+        <legend>Birthday (Optional)</legend>
+        <select name="birthMonth" id="birthMonth">
+          <option value="" selected="selected">Month</option>
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+        <input type="text" placeholder="dd" name=birthDay id=birthDay>
+        <input type="text" placeholder="yyyy" name=birthYear id=birthYear>
+      </fieldset>
     <li>
       <label for="image">Upload image</label>
       <input type="text" name="image" id="image">
     <li>
-      <input type="submit" value="Submit">
+      <input type="submit" name="submit" value="Submit">
   </ol>
 </form>
->>>>>>> 4aa1cf9302b979e2715ed2d73620186ea3f82236
