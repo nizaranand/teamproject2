@@ -7,11 +7,11 @@
 <form action="#" method="post">
   <ol>
     <li>
-      <label for="first-name">First name</label>
-      <input type="text" name="first-name" id="first-name">
+      <label for="first_name">First name</label>
+      <input type="text" name="first_name" id="first_name">
     <li>
-      <label for="last-name">Last name</label>
-      <input type="text" name="last-name" id="last-name">
+      <label for="last_name">Last name</label>
+      <input type="text" name="last_name" id="last_name">
     <li>
       <label for="email">Email address</label>
       <input type="text" name="email" id="email">
@@ -30,8 +30,37 @@
         <option value="other">Other</option>
       </select>
     <li>
-      <label for="age">Age (Optional)</label>
-      <input type="text" name="age" id="age">
+      <label for="birthday">Birthday (Optional)</label>
+      <select name="agemonth" id="month">
+        <option value="" selected="selected">Month</option>
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+      <select name="ageday" id="day">
+        <option value="" selected="selected">Day</option>
+        <?php
+        for($i=1;$i<32;$i++){ //This is not a smart month checker. We can validate month/day after this page.
+          echo "<option value=\"$i\">$i</option>";
+        }
+        ?>
+      </select>
+      <select>
+        <?php
+        for($i=1900;$i<2013;$i++){ //Yes, this covers a very...comprehensive age range.
+          echo "<option value=\"$i\">$i</option>";
+        }
+        ?>
+      </select>
     <li>
       <label for="image">Upload image</label>
       <input type="text" name="image" id="image">
