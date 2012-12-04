@@ -28,6 +28,13 @@ if (isset($_POST['submit'])) {
   
   $errorMessage = '';
   
+  if ($_FILES["image"]["error"] > 0) {
+    $errorMessage .= $_FILES["image"]["error"] . "<br>";
+  }
+  else {
+    move_uploaded_file($_FILES["image"]["tmp_name"], "./" . $_FILES["image"]["name"]);
+  }
+  
   //Name max 50 characters each, TODO further validation: not empty, not whitespace, etc.
   if (strlen($firstName) > 50) {
     $errorMessage .= 'First name may be a maximum of 50 characters<br>';
@@ -100,7 +107,7 @@ if (isset($_POST['submit'])) {
     }
   }
 ?>
-<form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post">
+<form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post" enctype="multipart/form-data">
   <ol>
     <li>
       <label for="firstName">First name</label>
@@ -147,8 +154,9 @@ if (isset($_POST['submit'])) {
       </fieldset>
     <li>
       <label for="image">Upload image</label>
-      <input type="text" name="image" id="image">
+      <input type="file" name="image" id="image">
     <li>
       <input type="submit" name="submit" value="Submit">
   </ol>
+  <p><a href="login.php">Existing user login</a></p>
 </form>
