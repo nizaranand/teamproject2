@@ -1,3 +1,51 @@
+<<<<<<< HEAD
+<?php
+
+require 'PasswordHash.php';
+
+//TODO error checking (ie failed database connection), input validation/sanitation, response
+
+//TODO Possibly move to config file
+$databaseHost = '127.0.0.1';
+//$databaseUsername = 'team14';
+//$databasePassword = 'teal';
+$databaseUsername = 'root';
+$databasePassword = 'rooty';
+$databaseName = 'team_project_2';
+//base 2 logarithm used in bcrypt security, higher means more stretching done
+$hashCost = 8;
+//force using built-in functions for portability?
+$portable = false;
+
+$firstName = $_POST['firstName'];
+$lastName = $_POST['lastName'];
+$email = $_POST['email'];
+$password = $_POST['password'];//max length 72
+$password2 = $_POST['password2'];
+$gender = $_POST['gender'];
+$birthday = $_POST['birthday'];
+
+//create database connection
+$database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
+
+$hasher = new PasswordHash($hashCost, $portable);
+
+$hash = $hasher->HashPassword($password);//min length 20
+unset($hasher);
+
+$var = 0;//TODO handle user_id and gender, get rid of this variable
+
+$statement = $database->prepare('insert into user_info values (?, ?, ?, ?, ?, ?, ?)');
+$statement->bind_param('issssis', $var, $hash, $email, $firstName, $lastName, $var, $birthday);
+$statement->execute();
+$statement->close();
+
+$database->close();
+
+echo "Done.";
+
+?>
+=======
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Create a new account</title>
@@ -68,3 +116,4 @@
       <input type="submit" value="Submit">
   </ol>
 </form>
+>>>>>>> 4aa1cf9302b979e2715ed2d73620186ea3f82236
