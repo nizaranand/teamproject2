@@ -68,7 +68,7 @@ if (isset($_POST['submit'])) {
     $errorMessage .= 'Error validating gender<br>';
   }
   //validate date, TODO restrict age range, check if empty or incorrect format
-  if (ctype_digit($birthMonth + 0) && ctype_digit($birthDay + 0) && ctype_digit($birthYear + 0)) {
+  if (filter_var($birthMonth, FILTER_VALIDATE_INT) && filter_var($birthDay, FILTER_VALIDATE_INT) && filter_var($birthYear, FILTER_VALIDATE_INT)) {
     if (!checkdate($birthMonth, $birthDay, $birthYear)) {
       $errorMessage .= 'Invalid birthday<br>';
     }
@@ -157,8 +157,8 @@ if (isset($_POST['submit'])) {
           <option value="11">November</option>
           <option value="12">December</option>
         </select>
-        <input type="text" placeholder="dd" name=birthDay id=birthDay>
-        <input type="text" placeholder="yyyy" name=birthYear id=birthYear>
+        <input type="text" placeholder="dd" name="birthDay" id="birthDay">
+        <input type="text" placeholder="yyyy" name="birthYear" id="birthYear">
       </fieldset>
     <li>
       <label for="image">Upload image</label>
