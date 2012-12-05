@@ -28,11 +28,13 @@ if (isset($_POST['submit'])) {
   
   $errorMessage = '';
   
-  if ($_FILES["image"]["error"] > 0) {
-    $errorMessage .= $_FILES["image"]["error"] . "<br>";
-  }
-  else {
-    move_uploaded_file($_FILES["image"]["tmp_name"], "./" . $_FILES["image"]["name"]);
+  if(is_uploaded_file($_FILES['image']['tmp_name'])) {
+    if ($_FILES["image"]["error"] > 0) {
+      $errorMessage .= $_FILES["image"]["error"] . "<br>";
+    }
+    else {
+      move_uploaded_file($_FILES["image"]["tmp_name"], "./" . $_FILES["image"]["name"]);
+    }
   }
   
   //Name max 50 characters each, TODO further validation: not empty, not whitespace, etc.
@@ -69,6 +71,9 @@ if (isset($_POST['submit'])) {
   if (!checkdate($birthMonth, $birthDay, $birthYear)) {
     $errorMessage .= 'Invalid birthday<br>';
   }
+  else {
+    $birthdate = "$birthYear-$birthMonth-$birthDay";
+  }
   
   if ($errorMessage === '') {
 
@@ -80,10 +85,10 @@ if (isset($_POST['submit'])) {
     $hash = $hasher->HashPassword($password);//min length 20
     unset($hasher);
 
-    $var = 0;//TODO handle user_id and gender, get rid of this variable
+    $userId = 0;//database auto-increments
 
     $statement = $database->prepare('insert into user_info values (?, ?, ?, ?, ?, ?, ?)'); //TODO make certain parameters correspond to database
-    $statement->bind_param('issssis', $var, $hash, $email, $firstName, $lastName, $var, $birthday);//TODO handle user_id and gender
+    $statement->bind_param('issssis', $userId, $hash, $email, $firstName, $lastName, $gender, $birthdate);
     $statement->execute();
     $statement->close();
 
