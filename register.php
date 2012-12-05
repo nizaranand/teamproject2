@@ -67,12 +67,17 @@ if (isset($_POST['submit'])) {
   else {
     $errorMessage .= 'Error validating gender<br>';
   }
-  //validate date, TODO restrict age range, check if empty
-  if (!checkdate($birthMonth, $birthDay, $birthYear)) {
-    $errorMessage .= 'Invalid birthday<br>';
+  //validate date, TODO restrict age range, check if empty or incorrect format
+  if (ctype_digit($birthMonth + 0) && ctype_digit($birthDay + 0) && ctype_digit($birthYear + 0)) {
+    if (!checkdate($birthMonth, $birthDay, $birthYear)) {
+      $errorMessage .= 'Invalid birthday<br>';
+    }
+    else {
+      $birthdate = "$birthYear-$birthMonth-$birthDay";
+    }
   }
-  else {
-    $birthdate = "$birthYear-$birthMonth-$birthDay";
+  else if (!empty($birthMonth) || !empty($birthDay) || !empty($birthYear)) {
+    $errorMessage .= 'Invalid date input<br>';
   }
   
   if ($errorMessage === '') {
@@ -85,10 +90,8 @@ if (isset($_POST['submit'])) {
     $hash = $hasher->HashPassword($password);//min length 20
     unset($hasher);
 
-    $userId = 0;//database auto-increments
-
-    $statement = $database->prepare('insert into user_info values (?, ?, ?, ?, ?, ?, ?)'); //TODO make certain parameters correspond to database
-    $statement->bind_param('issssis', $userId, $hash, $email, $firstName, $lastName, $gender, $birthdate);
+    $statement = $database->prepare('insert into user_info (password, email, first_name, last_name, gender, birthday) values (?, ?, ?, ?, ?, ?)'); //TODO make certain parameters correspond to database
+    $statement->bind_param('ssssis', $hash, $email, $firstName, $lastName, $gender, $birthdate);
     $statement->execute();
     $statement->close();
 
