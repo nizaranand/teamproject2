@@ -66,16 +66,19 @@ $query->execute();
 $query->bind_result($mem_id,$memFirstName,$memLastName);
 ?>
 <h2>Members:</h2>
+<table>
 <?php
 for($i=0;$query->fetch();$i++) {
+	echo "<tr>";
 	echo "<form action=\"profile.php\" method=\"GET\">";
-	echo $memFirstName." ".$memLastName;
-	echo "<input type=\"hidden\" name=\"memb\" value=\"$mem_id\" /> 
-	<input type=\"submit\" value=\"View Profile\"/> ";
+	echo "<td>".$memFirstName."</td><td>".$memLastName."</td>";
+	echo "<td><a href=\"profile.php?memb=".$mem_id."\">View Profile</a></td>";
 	echo "</form>";
+	echo "</tr>";
 	}
 $query->close();
 $mysqli->close();
 
 ?>
+</table>
 </html>
