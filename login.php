@@ -1,7 +1,16 @@
 <?php
-if(session_id()!=''){
-  echo session_id();
-  }
+if(session_id()==''){
+  session_start();
+}
+/*echo session_id()."<br>";
+if(isset($_SESSION['state'])){
+  echo $_SESSION['state'];
+}*/
+
+if(isset($_SESSION['user_id'])){
+  header('Location: home.php');
+}
+
 if (isset($_POST['submit'])) {
   require 'PasswordHash.php';
 
@@ -32,17 +41,32 @@ if (isset($_POST['submit'])) {
   $statement->execute();
   $statement->bind_result($hash);
   $statement->fetch();
-  
   $statement->close();
   $database->close();
 
 if ($hasher->CheckPassword($password, $hash)) {
   echo 'Login succeeded';
-  session_start();
+  $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
+  $statement = $database->prepare('select user_id from user_info where email=?');
+  $statement->bind_param('s', $email);
+  $statement->execute();
+  $statement->bind_result($_SESSION['user_id']);
+  $statement->fetch();
+  $statement->close();
+  $database->close();
+  
+  $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
+  $statement = $database->prepare('select user_id from user_info where email=?');
+  $statement->bind_param('s', $email);
+  $statement->execute();
+  $statement->bind_result($_SESSION['user_id']);
+  $statement->fetch();
+  $statement->close();
+  $database->close();
   header('Location: home.php');
 } 
 else {
-  echo 'Login failed';
+  $_SESSION['state']="invalidLogin";
 }
 
   unset($hasher);
@@ -58,6 +82,19 @@ else {
 <form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post">
   <ol>
     <li>
+<?php
+if(isset($_SESSION['state'])){
+  if($_SESSION['state']=="exists"){
+    echo "Good news! You're already registered. Please sign in.";
+  } elseif($_SESSION['state']=="regSuccess"){
+    echo 'Registration Success! Please sign in.';
+  } elseif($_SESSION['state']=="invalidLogin"){
+    echo 'Invalid username/password, please try again.';
+  }
+  echo '<br>';
+  unset($_SESSION['state']);
+}
+?>
       <label for="email">Email</label>
       <input type="text" name="email" id="email">
     <li>

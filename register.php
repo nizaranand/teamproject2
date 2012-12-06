@@ -1,7 +1,17 @@
 <?php
-if(session_id()!=''){
-  echo session_id();
-} elseif (isset($_POST['submit'])) {
+if(session_id()==''){
+  session_start();
+}
+
+/*if(isset($_SESSION['state'])){
+  echo $_SESSION['state'];
+}*/
+
+if(isset($_SESSION['user_id'])){
+  header('Location: home.php');
+}
+
+if (isset($_POST['submit'])) {
   require 'PasswordHash.php';
 
   //TODO error checking (ie failed database connection), input validation/sanitation, response
@@ -56,8 +66,12 @@ if(session_id()!=''){
     $statement->execute();
     $statement->bind_result($num_users);
     $statement->fetch();
+    $statement->close();
+    $database->close();
   if($num_users!=0){
     $errorMessage.='Email already exists! Please sign in.<br>';
+    $_SESSION['state']="exists";
+    header('Location: login.php');
   }
   //password max length 72, 1 and 2 has to be the same, TODO further validation: not empty
   if (strlen($password) > 72) {
@@ -121,7 +135,8 @@ if(session_id()!=''){
   if (isset($_POST['submit'])) {
     if ($errorMessage === '') {
       echo 'Registration successful';
-    header('Location: login.php');
+      $_SESSION['state']="regSuccess";
+      header('Location: login.php');
     }
     else {
       echo $errorMessage;
