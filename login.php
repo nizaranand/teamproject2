@@ -54,10 +54,11 @@ if ($hasher->CheckPassword($password, $hash)) {
   $statement->fetch();
   $statement->close();
   $database->close();
-  
+
+  $ip=$_SERVER['REMOTE_ADDR'];
   $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
-  $statement = $database->prepare('select user_id from user_info where email=?');
-  $statement->bind_param('s', $email);
+  $statement = $database->prepare('update user_info set user_session_ip=? where user_id=?');
+  $statement->bind_param('ss', $ip,$_SESSION['user_id']);
   $statement->execute();
   $statement->bind_result($_SESSION['user_id']);
   $statement->fetch();
