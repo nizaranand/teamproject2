@@ -1,6 +1,6 @@
 <head>
 <meta charset="utf-8">
-<title>Login</title>
+<title>Home Page</title>
 <link rel="stylesheet" href="style.css">
 <?php 
 if(session_id()==''){

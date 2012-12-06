@@ -1,6 +1,6 @@
 <head>
 <meta charset="utf-8">
-<title>Login</title>
+<title>Profile</title>
 <link rel="stylesheet" href="style.css">
 <?php 
 if(session_id()==''){
@@ -38,3 +38,4 @@ if($userSessionIP!=$ip){
 }
 ?>
 </head>
+<?php echo $_REQUEST['memb']?>
