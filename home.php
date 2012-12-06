@@ -47,7 +47,7 @@ $_SESSION['profile_id']=$_SESSION['user_id'];
 	<li>
 		<a href="profile.php">View Profile</a>
 	<li>
-		<a href="friends.php">View Friends</a>
+		<a href="friends.php">View Friends (Currently not implemented)</a>
 	<li>
 		<a href="members.php">View Members</a>
 	<li>
