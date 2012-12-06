@@ -1,5 +1,7 @@
 <?php
-if (isset($_POST['submit'])) {
+if(session_id()!=''){
+  echo session_id();
+} elseif (isset($_POST['submit'])) {
   require 'PasswordHash.php';
 
   //TODO error checking (ie failed database connection), input validation/sanitation, response
@@ -9,7 +11,7 @@ if (isset($_POST['submit'])) {
   //$databaseUsername = 'team14';
   //$databasePassword = 'teal';
   $databaseUsername = 'root';
-  $databasePassword = 'rooty';
+  $databasePassword = 'attack12';
   $databaseName = 'team_project_2';
   //base 2 logarithm used in bcrypt security, higher means more stretching done
   $hashCost = 8;
@@ -46,6 +48,16 @@ if (isset($_POST['submit'])) {
   }
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errorMessage .= 'Email invalid<br>';
+  }
+  //email uniqueness verification
+    $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
+    $statement = $database->prepare('select count(user_id) from user_info where email=?');
+    $statement->bind_param('s', $email);
+    $statement->execute();
+    $statement->bind_result($num_users);
+    $statement->fetch();
+  if($num_users!=0){
+    $errorMessage.='Email already exists! Please sign in.<br>';
   }
   //password max length 72, 1 and 2 has to be the same, TODO further validation: not empty
   if (strlen($password) > 72) {
@@ -109,6 +121,7 @@ if (isset($_POST['submit'])) {
   if (isset($_POST['submit'])) {
     if ($errorMessage === '') {
       echo 'Registration successful';
+    header('Location: login.php');
     }
     else {
       echo $errorMessage;

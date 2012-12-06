@@ -1,4 +1,7 @@
 <?php
+if(session_id()!=''){
+  echo session_id();
+  }
 if (isset($_POST['submit'])) {
   require 'PasswordHash.php';
 
@@ -9,7 +12,7 @@ if (isset($_POST['submit'])) {
   //$databaseUsername = 'team14';
   //$databasePassword = 'teal';
   $databaseUsername = 'root';
-  $databasePassword = 'rooty';
+  $databasePassword = 'attack12';
   $databaseName = 'team_project_2';
   //base 2 logarithm used in bcrypt security, higher means more stretching done
   $hashCost = 8;
@@ -33,14 +36,14 @@ if (isset($_POST['submit'])) {
   $statement->close();
   $database->close();
 
-  if ($hasher->CheckPassword($password, $hash)) {
-	  echo 'Login succeeded';
-	  session_start();
-	  header('Location: home.php');
-  } 
-  else {
-	  echo 'Login failed';
-  }
+if ($hasher->CheckPassword($password, $hash)) {
+  echo 'Login succeeded';
+  session_start();
+  header('Location: home.php');
+} 
+else {
+  echo 'Login failed';
+}
 
   unset($hasher);
 }
