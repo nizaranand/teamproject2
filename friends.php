@@ -1,3 +1,7 @@
+<?php
+//Video below should display if user has 0 friends.
+?>
+
 <object width="560" height="315">
 	<param name="movie" value="http://www.youtube.com/v/9JtEXMklLMI&autoplay=1?version=3&amp;hl=en_US&amp;rel=0"></param>
 	<param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param>
