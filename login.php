@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <?php
 if(session_id()==''){
   session_start();
@@ -74,10 +75,10 @@ else {
 }
 
 ?>
-<!DOCTYPE html>
 <meta charset="utf-8">
 <title>Login</title>
-<link rel="stylesheet" href="register.css">
+<link rel="stylesheet" href="style.css">
+</head>
 <h1>Social Network</h1>
 <h2>Login</h2>
 <form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post">
@@ -91,6 +92,12 @@ if(isset($_SESSION['state'])){
     echo 'Registration Success! Please sign in.';
   } elseif($_SESSION['state']=="invalidLogin"){
     echo 'Invalid username/password, please try again.';
+  } elseif($_SESSION['state']=="badIP"){
+    echo 'It appears that you have logged in from a different IP. Please try again.';
+  } elseif($_SESSION['state']=="noLogin"){
+    echo 'You must be logged in to view this page!';
+  } elseif($_SESSION['state']=="logout"){
+    echo 'You have been successfully logged out!';
   }
   echo '<br><br>';
   unset($_SESSION['state']);

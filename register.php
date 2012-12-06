@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<head>
 <?php
 if(session_id()==''){
   session_start();
@@ -133,10 +135,10 @@ if (isset($_POST['submit'])) {
   }
 }
 ?>
-<!DOCTYPE html>
 <meta charset="utf-8">
 <title>Create a new account</title>
-<link rel="stylesheet" href="register.css">
+<link rel="stylesheet" href="style.css">
+</head>
 <h1>Social Network</h1>
 <h2>Register a new account</h2>
 <div>Asterisk (*) indicates a required field.<br></div>
