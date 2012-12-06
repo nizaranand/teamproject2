@@ -92,7 +92,7 @@ if(isset($_SESSION['state'])){
   } elseif($_SESSION['state']=="invalidLogin"){
     echo 'Invalid username/password, please try again.';
   }
-  echo '<br>';
+  echo '<br><br>';
   unset($_SESSION['state']);
 }
 ?>
