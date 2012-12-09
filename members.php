@@ -1,8 +1,3 @@
-<html>
-<head>
-<meta charset="utf-8">
-<title>Members</title>
-<link rel="stylesheet" href="style.css">
 <?php 
 if(session_id()==''){
 	session_start();
@@ -10,14 +5,12 @@ if(session_id()==''){
 if(!isset($_SESSION['user_id'])){
 	$_SESSION['state']="noLogin";
 	header('Location: login.php');
+	exit;
 }
 
-$db_ip="localhost";
-$db_user="root";
-$db_password="attack12";
-$db_name="team_project_2";
+require_once 'config.php';
 
-$mysqli=new mysqli($db_ip,$db_user,$db_password,$db_name);
+$mysqli=new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
 if (mysqli_connect_errno()) {
 	printf("Connect failed: %s\n", mysqli_connect_error());
 	exit();
@@ -38,7 +31,10 @@ if($userSessionIP!=$ip){
 	header('login.php');
 }
 ?>
-</head>
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Members</title>
+<link rel="stylesheet" href="style.css">
 <?php
 echo 'Currently logged in as: '.$firstName.' '.$lastName;
 ?>
@@ -54,7 +50,7 @@ echo 'Currently logged in as: '.$firstName.' '.$lastName;
 </ol>
 <?php
 
-$mysqli=new mysqli($db_ip,$db_user,$db_password,$db_name);
+$mysqli=new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
 if (mysqli_connect_errno()) {
 	printf("Connect failed: %s\n", mysqli_connect_error());
 	exit();
@@ -81,4 +77,3 @@ $mysqli->close();
 
 ?>
 </table>
-</html>

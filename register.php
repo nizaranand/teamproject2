@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<head>
 <?php
 if(session_id()==''){
   session_start();
@@ -11,24 +9,15 @@ if(session_id()==''){
 
 if(isset($_SESSION['user_id'])){
   header('Location: home.php');
+  exit;
 }
 
 if (isset($_POST['submit'])) {
-  require 'PasswordHash.php';
+  require_once 'PasswordHash.php';
 
   //TODO error checking (ie failed database connection), input validation/sanitation, response
 
-  //TODO Possibly move to config file
-  $databaseHost = '127.0.0.1';
-  //$databaseUsername = 'team14';
-  //$databasePassword = 'teal';
-  $databaseUsername = 'root';
-  $databasePassword = 'attack12';
-  $databaseName = 'team_project_2';
-  //base 2 logarithm used in bcrypt security, higher means more stretching done
-  $hashCost = 8;
-  //force using built-in functions for portability?
-  $portable = false;
+  require_once 'config.php';
 
   $firstName = $_POST['firstName'];
   $lastName = $_POST['lastName'];
@@ -41,34 +30,41 @@ if (isset($_POST['submit'])) {
   $birthYear = $_POST['birthYear'];
   
   $errorMessage = '';
-  //TODO make image file name the user's ID on upload, add extension type to database.
+  //TODO make image file name the user's ID on upload, add extension type to database, verify image type, sanitize
   if(is_uploaded_file($_FILES['image']['tmp_name'])) {
     if ($_FILES["image"]["error"] > 0) {
       $errorMessage .= $_FILES["image"]["error"] . "<br>";
     }
     else {
-      move_uploaded_file($_FILES["image"]["tmp_name"], "./" . $_FILES["image"]["name"]);
+      $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
+      $result = $database->query("SHOW TABLE STATUS LIKE 'user_info'");
+      $userId = $result->fetch_array();
+      $userId = $userId['Auto_increment'];
+      $result->free();
+      $database->close();
+      
+      move_uploaded_file($_FILES["image"]["tmp_name"], './' . $userId);
     }
   }
   
-  //Name max 50 characters each, TODO further validation: not empty, not whitespace, etc.
   if (strlen($firstName) > 50) {
     $errorMessage .= 'First name may be a maximum of 50 characters<br>';
-  } elseif (strlen($firstName)==0){
+  }
+  else if (strlen($firstName)==0){
     $errorMessage .= 'First name cannot be blank!<br>';
   }
   if (strlen($lastName) > 50) {
     $errorMessage .= 'Last name may be a maximum of 50 characters<br>';
-  } elseif (strlen($lastName)==0){
+  }
+  else if (strlen($lastName)==0){
     $errorMessage .= 'Last name cannot be blank!<br>';
   }
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errorMessage .= 'Email invalid<br>';
-  } elseif(strlen($email)==0){
-    $errorMessage .= 'Email address cannot be blank!';
   }
-  //email uniqueness verification
-    $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
+  else {
+    //email uniqueness verification
+    $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
     $statement = $database->prepare('select count(user_id) from user_info where email=?');
     $statement->bind_param('s', $email);
     $statement->execute();
@@ -76,16 +72,19 @@ if (isset($_POST['submit'])) {
     $statement->fetch();
     $statement->close();
     $database->close();
-  if($num_users!=0){
-    $errorMessage.='Email already exists! Please sign in.<br>';
-    $_SESSION['state']="exists";
-    header('Location: login.php');
+    if($num_users!=0){
+      $errorMessage.='Email already exists! Please sign in.<br>';
+      $_SESSION['state']="exists";
+      header('Location: login.php');
+      exit;
+    }
   }
-  //password max length 72, 1 and 2 has to be the same, DONE further validation: not empty
+  //password max length 72, 1 and 2 has to be the same
   if (strlen($password) > 72) {
     $errorMessage .= 'Password can have a maximum length of 72 characters<br>';
-  } elseif(strlen($password)==0) {
-    $errorMessage.= 'Password cannot be empty.<br>';
+  }
+  else if(strlen($password) < 6) {
+    $errorMessage.= 'Password cannot be less than 6 characters.<br>';
   }
   else if ($password !== $password2) {
     $errorMessage .= 'Password must match in both fields.<br>';
@@ -103,8 +102,11 @@ if (isset($_POST['submit'])) {
   else {
     $errorMessage .= 'Error validating gender<br>';
   }
-  //validate date, DONE restrict age range, check if empty or incorrect format
-  //SQL errror checking sees if incorrect date. Changed to dropdowns.
+  //strip leading zeros from date as filter_var can't seem to handle them
+  $birthDay = ltrim($birthDay, '0');
+  $birthMonth = ltrim($birthMonth, '0');
+  $birthYear = ltrim($birthYear, '0');
+  //validate date
   if (filter_var($birthMonth, FILTER_VALIDATE_INT) && filter_var($birthDay, FILTER_VALIDATE_INT) && filter_var($birthYear, FILTER_VALIDATE_INT)) {
     if (!checkdate($birthMonth, $birthDay, $birthYear)) {
       $errorMessage .= 'Invalid birthday<br>';
@@ -118,44 +120,44 @@ if (isset($_POST['submit'])) {
   }
   
   if ($errorMessage === '') {
-
-    //create database connection
-    $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
-
     $hasher = new PasswordHash($hashCost, $portable);
-
     $hash = $hasher->HashPassword($password);//min length 20
     unset($hasher);
-    $statement = $database->prepare('insert into user_info (password, email, first_name, last_name, gender, birthday) values (?, ?, ?, ?, ?, ?)'); //TODO make certain parameters correspond to database
-    $statement->bind_param('ssssis', $hash, $email, $firstName, $lastName, $gender, $birthdate);
+    if (strlen($hash) < 20) {
+      fail("Hash below minimum possible length");
+    }
+    
+    $activationKey = mt_rand() . mt_rand() . mt_rand() . mt_rand() . mt_rand(); 
+    
+    $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
+    $statement = $database->prepare('insert into user_info (password, email, first_name, last_name, gender, birthday, active, activation_key) values (?, ?, ?, ?, ?, ?, 0, ?)');
+    $statement->bind_param('ssssiss', $hash, $email, $firstName, $lastName, $gender, $birthdate, $activationKey);
     $statement->execute();
     $statement->close();
-
     $database->close();
   }
 }
 ?>
+<!DOCTYPE html>
 <meta charset="utf-8">
 <title>Create a new account</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <h1>Social Network</h1>
 <h2>Register a new account</h2>
-<div>Asterisk (*) indicates a required field.<br></div>
-<i>
+<div>Asterisk (*) indicates a required field. </div>
 <?php
   if (isset($_POST['submit'])) {
     if ($errorMessage === '') {
-      echo 'Registration successful';
       $_SESSION['state']="regSuccess";
       header('Location: login.php');
+      exit;
     }
     else {
-      echo $errorMessage;
+      echo "<div>$errorMessage</div>";
     }
   }
 ?>
-</i>
 <form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post" enctype="multipart/form-data">
   <ol>
     <li>
@@ -221,5 +223,5 @@ if (isset($_POST['submit'])) {
     <li>
       <input type="submit" name="submit" value="Submit">
   </ol>
-  <p><a href="login.php">Existing user login</a></p>
+  <div><a href="login.php">Existing user login</div></p>
 </form>

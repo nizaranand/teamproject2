@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <?php
 if(session_id()==''){
   session_start();
@@ -10,33 +9,23 @@ if(isset($_SESSION['state'])){
 
 if(isset($_SESSION['user_id'])){
   header('Location: home.php');
+  exit;
 }
 
 if (isset($_POST['submit'])) {
-  require 'PasswordHash.php';
+  require_once 'PasswordHash.php';
 
   //TODO error checking (ie failed database connection), input validation/sanitation, response
 
-  //TODO Possibly move to config file
-  $databaseHost = '127.0.0.1';
-  //$databaseUsername = 'team14';
-  //$databasePassword = 'teal';
-  $databaseUsername = 'root';
-  $databasePassword = 'attack12';
-  $databaseName = 'team_project_2';
-  //base 2 logarithm used in bcrypt security, higher means more stretching done
-  $hashCost = 8;
-  //force using built-in functions for portability?
-  $portable = false;
+  require_once 'config.php';
 
   $email = $_POST['email'];
   $password = $_POST['password'];//max length 72
-
-  $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
-
+  
   $hasher = new PasswordHash($hashCost, $portable);
-
   $hash = '*';
+
+  $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
   $statement = $database->prepare('select password from user_info where email=?');
   $statement->bind_param('s', $email);
   $statement->execute();
@@ -45,47 +34,46 @@ if (isset($_POST['submit'])) {
   $statement->close();
   $database->close();
 
-if ($hasher->CheckPassword($password, $hash)) {
-  echo 'Login succeeded';
-  $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
-  $statement = $database->prepare('select user_id from user_info where email=?');
-  $statement->bind_param('s', $email);
-  $statement->execute();
-  $statement->bind_result($_SESSION['user_id']);
-  $statement->fetch();
-  $statement->close();
-  $database->close();
+  if ($hasher->CheckPassword($password, $hash)) {
+    echo 'Login succeeded';
+    $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
+    $statement = $database->prepare('select user_id from user_info where email=?');
+    $statement->bind_param('s', $email);
+    $statement->execute();
+    $statement->bind_result($_SESSION['user_id']);
+    $statement->fetch();
+    $statement->close();
+    $database->close();
 
-  $ip=$_SERVER['REMOTE_ADDR'];
-  $database = new mysqli($databaseHost, $databaseUsername, $databasePassword, $databaseName);
-  $statement = $database->prepare('update user_info set user_session_ip=? where user_id=?');
-  $statement->bind_param('ss', $ip,$_SESSION['user_id']);
-  $statement->execute();
-  $statement->bind_result($_SESSION['user_id']);
-  $statement->fetch();
-  $statement->close();
-  $database->close();
-  header('Location: home.php');
-} 
-else {
-  $_SESSION['state']="invalidLogin";
-}
+    $ip=$_SERVER['REMOTE_ADDR'];
+    $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
+    $statement = $database->prepare('update user_info set user_session_ip=? where user_id=?');
+    $statement->bind_param('ss', $ip,$_SESSION['user_id']);
+    $statement->execute();
+    $statement->bind_result($_SESSION['user_id']);
+    $statement->fetch();
+    $statement->close();
+    $database->close();
+    header('Location: home.php');
+    exit;
+  } 
+  else {
+    $_SESSION['state']="invalidLogin";
+  }
 
   unset($hasher);
 }
 
 ?>
+<!DOCTYPE html>
 <meta charset="utf-8">
 <title>Login</title>
 <link rel="stylesheet" href="style.css">
-</head>
 <h1>Social Network</h1>
 <h2>Login</h2>
-<form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post">
-  <ol>
-    <li>
 <?php
 if(isset($_SESSION['state'])){
+  echo '<div>';
   if($_SESSION['state']=="exists"){
     echo "Good news! You're already registered. Please sign in.";
   } elseif($_SESSION['state']=="regSuccess"){
@@ -99,10 +87,13 @@ if(isset($_SESSION['state'])){
   } elseif($_SESSION['state']=="logout"){
     echo 'You have been successfully logged out!';
   }
-  echo '<br><br>';
+  echo '</div>';
   unset($_SESSION['state']);
 }
 ?>
+<form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post">
+  <ol>
+    <li>
       <label for="email">Email</label>
       <input type="text" name="email" id="email">
     <li>
@@ -112,4 +103,4 @@ if(isset($_SESSION['state'])){
       <input type="submit" name="submit" value="Submit">
   </ol>
 </form>
-<p><a href="register.php">Register an account</a></p>
+<div><a href="register.php">Register an account</a></div>

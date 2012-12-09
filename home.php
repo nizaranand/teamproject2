@@ -1,7 +1,3 @@
-<head>
-<meta charset="utf-8">
-<title>Home Page</title>
-<link rel="stylesheet" href="style.css">
 <?php 
 if(session_id()==''){
 	session_start();
@@ -9,20 +5,17 @@ if(session_id()==''){
 if(!isset($_SESSION['user_id'])){
 	$_SESSION['state']="noLogin";
 	header('Location: login.php');
+	exit;
 }
 
-$db_ip="localhost";
-$db_user="root";
-$db_password="attack12";
-$db_name="team_project_2";
+require_once 'config.php';
 
-$mysqli=new mysqli($db_ip,$db_user,$db_password,$db_name);
+$mysqli=new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
 if (mysqli_connect_errno()) {
-	printf("Connect failed: %s\n", mysqli_connect_error());
-	exit();
+	fail(mysqli_connect_error());
 }
 
-$query = $mysqli->prepare("SELECT user_id,first_name,last_name,user_session_ip FROM user_info WHERE user_id=?");
+($query = $mysqli->prepare("SELECT user_id,first_name,last_name,user_session_ip FROM user_info WHERE user_id=?")) || fail($mysqli->error);
 $query->bind_param('s',$_SESSION['user_id']);
 $query->execute();
 $query->bind_result($user_id,$firstName,$lastName,$userSessionIP);
@@ -35,14 +28,17 @@ if($userSessionIP!=$ip){
 	$_SESSION['state']="badIP";
 	unset($_SESSION['user_id']);
 	header('login.php');
+	exit;
 }
 ?>
-</head>
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Home Page</title>
+<link rel="stylesheet" href="style.css">
 <?php
-echo "Welcome, ".$firstName." ".$lastName;
+echo "<div>Welcome, $firstName $lastName</div>";
 $_SESSION['profile_id']=$_SESSION['user_id'];
 ?>
-<br>
 <ol>
 	<li>
 		<?php echo "<a href=\"profile.php?memb=".$_SESSION['user_id']."\">"; ?> View Profile</a>

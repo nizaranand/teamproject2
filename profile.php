@@ -1,7 +1,3 @@
-<head>
-<meta charset="utf-8">
-<title>Profile</title>
-<link rel="stylesheet" href="style.css">
 <?php 
 if(session_id()==''){
 	session_start();
@@ -9,17 +5,14 @@ if(session_id()==''){
 if(!isset($_SESSION['user_id'])){
 	$_SESSION['state']="noLogin";
 	header('Location: login.php');
+	exit;
 }
 
-$db_ip="localhost";
-$db_user="root";
-$db_password="attack12";
-$db_name="team_project_2";
+require_once 'config.php';
 
-$mysqli=new mysqli($db_ip,$db_user,$db_password,$db_name);
+$mysqli=new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
 if (mysqli_connect_errno()) {
-	printf("Connect failed: %s\n", mysqli_connect_error());
-	exit();
+	fail(mysqli_connect_error());
 }
 
 $query = $mysqli->prepare("SELECT user_id,first_name,last_name,user_session_ip FROM user_info WHERE user_id=?");
@@ -35,17 +28,16 @@ if($userSessionIP!=$ip){
 	$_SESSION['state']="badIP";
 	unset($_SESSION['user_id']);
 	header('login.php');
+	exit;
 }
 
 if (isset($_SESSION['friend_id'])){
-	$mysqli=new mysqli($db_ip,$db_user,$db_password,$db_name);
+	$mysqli=new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
 	if (mysqli_connect_errno()) {
-		printf("Connect failed: %s\n", mysqli_connect_error());
-		exit();
+		fail(mysqli_connect_error());
 	}
-	$false=(1==0);
-	$query = $mysqli->prepare("INSERT INTO friend (initiator_id, recipient_id, accepted) values (?,?,?)" );
-	$query->bind_param('sss',$_SESSION['user_id'],$_REQUEST['memb'],$false);
+	$query = $mysqli->prepare("INSERT INTO friend (initiator_id, recipient_id, accepted) values (?,?,false)" );
+	$query->bind_param('ss',$_SESSION['user_id'],$_REQUEST['memb']);
 	$query->execute();
 	$query->fetch();
 	$query->close();
@@ -54,12 +46,10 @@ if (isset($_SESSION['friend_id'])){
 	unset($_SESSION['friend_id']);
 }
 ?>
-</head>
 <?php 
-	$mysqli=new mysqli($db_ip,$db_user,$db_password,$db_name);
+	$mysqli=new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
 	if (mysqli_connect_errno()) {
-		printf("Connect failed: %s\n", mysqli_connect_error());
-		exit();
+		fail(mysqli_connect_error());
 	}
 	$memb_id=$_REQUEST['memb']; //TODO Add injection sanitation and protection.
 	$query = $mysqli->prepare("SELECT email,first_name,last_name,gender,birthday FROM user_info WHERE user_id=?");
@@ -70,7 +60,10 @@ if (isset($_SESSION['friend_id'])){
 	$query->close();
 	$mysqli->close();
 ?>
-
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Profile</title>
+<link rel="stylesheet" href="style.css">
 <h2><?php echo $firstName." ".$lastName; ?></h2>
 <ol>
 	<li>
