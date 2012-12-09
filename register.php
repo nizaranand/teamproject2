@@ -223,5 +223,5 @@ if (isset($_POST['submit'])) {
     <li>
       <input type="submit" name="submit" value="Submit">
   </ol>
-  <div><a href="login.php">Existing user login</div></p>
 </form>
+<div><a href="login.php">Existing user login</div></p>

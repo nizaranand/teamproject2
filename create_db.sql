@@ -10,6 +10,8 @@ create table if not exists user_info(
     , birthday date
     , user_session_ip varchar(15)
     , picture_extension varchar(4)
+    , active tinyint(1) not null
+    , activation_key varchar(100) not null
     );
 create table if not exists status_update(
     status_id int key not null auto_increment
