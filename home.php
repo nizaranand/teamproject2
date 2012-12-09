@@ -36,7 +36,7 @@ if($userSessionIP!=$ip){
 <title>Home Page</title>
 <link rel="stylesheet" href="style.css">
 <?php
-echo "<div>Welcome, $firstName $lastName</div>";
+echo "<div>Welcome, " . htmlentities($firstName . " " . $lastName) . "</div>";
 $_SESSION['profile_id']=$_SESSION['user_id'];
 ?>
 <ol>
