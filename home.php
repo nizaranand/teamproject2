@@ -33,28 +33,36 @@ if($userSessionIP!=$ip){
 }
 //get list of friends
 //get latest 20 updates with user_id of self or friends
-$sql = "SELECT status_update.message, user_info.first_name, user_info.last_name, status_update.time_posted
-FROM status_update
-INNER JOIN user_info
-ON (user_info.user_id=status_update.user_id) AND (user_info.user_id=? OR user_info.user_id IN
-((SELECT initiator_id FROM friend WHERE (recipient_id=? AND accepted=1)
-UNION
-SELECT recipient_id FROM friend WHERE (initiator_id=? AND accepted=1))))
-ORDER BY status_update.time_posted DESC
-LIMIT 20";
-$query = $mysqli->prepare($sql);
-$query->bind_param('iii', $userId, $userId, $userId);
-$query->execute();
-$result = $query->get_result(); //hopefully mysqlnd is installed
-
-while ($row = $result->fetch_assoc()) {
-  foreach ($row as $key => $value) {
-    $row[$key] = htmlentities($value);
+try {
+  $dbh = new PDO("mysql:host=$databaseHost;dbname=$databaseName", $databaseUser, $databasePassword);
+  
+  $sql = "SELECT status_update.message, user_info.first_name, user_info.last_name, status_update.time_posted
+  FROM status_update
+  INNER JOIN user_info
+  ON (user_info.user_id=status_update.user_id) AND (user_info.user_id= :userId OR user_info.user_id IN
+  ((SELECT initiator_id FROM friend WHERE (recipient_id= :userId AND accepted=1)
+  UNION
+  SELECT recipient_id FROM friend WHERE (initiator_id= :userId AND accepted=1))))
+  ORDER BY status_update.time_posted DESC
+  LIMIT 20";
+  
+  $statement = $dbh->prepare($sql);
+  $statement->bindParam(':userId', $userId);
+  $statement->execute();
+  
+  while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+    foreach ($row as $key => $value) {
+      $row[$key] = htmlentities($value);
+    }
+    $statusArray[] = $row;
   }
-  $statusArray[] = $row;
+  
+  //close db
+  $dbh = null;
 }
-$result->free();
-$query->close();
+catch(PDOException $e) {
+  fail($e->getMessage());
+}
 
 $mysqli->close();
 ?>

@@ -33,7 +33,6 @@ if (isset($_POST['submit'])) {
   $database->close();
 
   if ($hasher->CheckPassword($password, $hash)) {
-    echo 'Login succeeded';
     $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
     $statement = $database->prepare('select user_id from user_info where email=?');
     $statement->bind_param('s', $email);
@@ -41,7 +40,6 @@ if (isset($_POST['submit'])) {
     $statement->bind_result($_SESSION['user_id']);
     $statement->fetch();
     $statement->close();
-    $database->close();
 
     $ip=$_SERVER['REMOTE_ADDR'];
     $database = new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
