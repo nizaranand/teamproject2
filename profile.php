@@ -215,10 +215,10 @@ else if ($userId != $memberId) {
   $query->bind_param('ii', $memberId, $userId);
   $query->execute();
   $query->bind_result($accepted);
-  $query->fetch();
+  $present = $query->fetch();
   $query->close();
   
-  if (isset($accepted)) {
+  if (!is_null($present)) {
     if ($accepted == 1) {
       $friend = 3;
     }
@@ -232,10 +232,10 @@ else if ($userId != $memberId) {
     $query->bind_param('ii', $userId, $memberId);
     $query->execute();
     $query->bind_result($accepted);
-    $query->fetch();
+    $present = $query->fetch();
     $query->close();
     
-    if (isset($accepted)) {
+    if (!is_null($present)) {
       if ($accepted == 1) {
         //possibly improve deleteion performance by using different value for friend
         //as initiator is different. cost is maintainability
