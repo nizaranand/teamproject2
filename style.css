@@ -42,11 +42,11 @@ li {
   width: 8em;
 }
 
-.firstName a {
+a {
   text-decoration: none;
 }
 
-.firstName a:hover {
+a:hover {
   text-decoration: underline; color: green;
 }
 

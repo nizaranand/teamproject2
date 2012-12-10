@@ -35,7 +35,7 @@ if($userSessionIP!=$ip){
 try {
   $dbh = new PDO("mysql:host=$databaseHost;dbname=$databaseName", $databaseUser, $databasePassword);
   
-  $sql = "SELECT first_name, last_name
+  $sql = "SELECT first_name, last_name, user_id
   FROM user_info
   WHERE user_id IN
   (SELECT initiator_id FROM friend WHERE (recipient_id= :userId AND accepted=1)
@@ -74,7 +74,7 @@ $mysqli->close();
   }
   else {
     foreach ($friendsArray as $friend) {
-      echo "<div> {$friend['first_name']} {$friend['last_name']} </div>";
+      echo "<div> <a href=\"profile.php?memb={$friend['user_id']}\">{$friend['first_name']} {$friend['last_name']}</a></div>";
     }
   }
 ?>
