@@ -35,9 +35,9 @@ if($userSessionIP!=$ip){
 $sql = "SELECT first_name, last_name
 FROM user_info
 WHERE user_id IN
-(SELECT initiator_id FROM friend WHERE recipient_id=? AND accepted=1
+(SELECT initiator_id FROM friend WHERE (recipient_id=? AND accepted=1)
 UNION
-SELECT recipient_id FROM friend WHERE initiator_id=? AND accepted=1)";
+SELECT recipient_id FROM friend WHERE (initiator_id=? AND accepted=1))";
 $query = $mysqli->prepare($sql);
 $query->bind_param('ii', $userId, $userId);
 $query->execute();
@@ -58,6 +58,7 @@ $mysqli->close();
 <meta charset="utf-8">
 <title>Friends</title>
 <link rel="stylesheet" href="style.css">
+<?php require_once 'menu.php'?>
 <h1>Friends</h1>
 <?php
   if (!isset($friendsArray)) {

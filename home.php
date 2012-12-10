@@ -62,6 +62,7 @@ $mysqli->close();
 <meta charset="utf-8">
 <title>Home Page</title>
 <link rel="stylesheet" href="style.css">
+<?php require_once 'menu.php'?>
 <?php
 echo "<div>Welcome, " . htmlentities($firstName . " " . $lastName) . "</div>";
 ?>
@@ -76,13 +77,3 @@ echo "<div>Welcome, " . htmlentities($firstName . " " . $lastName) . "</div>";
     }
   }
 ?>
-<ol>
-	<li>
-		<?php echo "<a href=\"profile.php?memb=".$userId."\">"; ?> View Profile</a>
-	<li>
-		<a href="friends.php">View Friends</a>
-	<li>
-		<a href="friendSearch.php">Search Members</a>
-	<li>
-		<a href="logout.php">Log out</a>
-</ol>

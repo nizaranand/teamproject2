@@ -81,6 +81,7 @@ $mysqli->close();
 <meta charset="utf-8">
 <title>Friend Search</title>
 <link rel="stylesheet" href="style.css">
+<?php require_once 'menu.php'?>
 <h1>Member search</h1>
 <form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post">
   <ol>

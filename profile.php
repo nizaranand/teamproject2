@@ -211,7 +211,7 @@ if ($userId == $memberId) {
 }
 else if ($userId != $memberId) {
   //check if user on this page initiated a request to logged in user, and if accepted
-  $query = $mysqli->prepare("SELECT accepted FROM friend WHERE initiator_id=? AND recipient_id=?");
+  $query = $mysqli->prepare("SELECT accepted FROM friend WHERE (initiator_id=? AND recipient_id=?)");
   $query->bind_param('ii', $memberId, $userId);
   $query->execute();
   $query->bind_result($accepted);
@@ -228,7 +228,7 @@ else if ($userId != $memberId) {
   }
   else {
     //check if logged in user initiated request
-    $query = $mysqli->prepare("SELECT accepted FROM friend WHERE initiator_id=? AND recipient_id=?");
+    $query = $mysqli->prepare("SELECT accepted FROM friend WHERE (initiator_id=? AND recipient_id=?)");
     $query->bind_param('ii', $userId, $memberId);
     $query->execute();
     $query->bind_result($accepted);
@@ -257,7 +257,7 @@ else if ($userId != $memberId) {
 	    $friend = 2;
     }
     else if ($friend == 1) {
-      $query = $mysqli->prepare("UPDATE friend SET accepted=1 WHERE initiator_id=? AND recipient_id=?");
+      $query = $mysqli->prepare("UPDATE friend SET accepted=1 WHERE (initiator_id=? AND recipient_id=?)");
       $query->bind_param('ii', $memberId, $userId);
       $query->execute();
 	    $query->close();
@@ -294,6 +294,7 @@ $mysqli->close();
 <meta charset="utf-8">
 <title>Profile</title>
 <link rel="stylesheet" href="style.css">
+<?php require_once 'menu.php'?>
 <h2><?php echo htmlentities($firstName . " " . $lastName); ?></h2>
 <ol>
 	<li>
