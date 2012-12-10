@@ -7,6 +7,14 @@ if(!isset($_SESSION['user_id'])){
 	header('Location: login.php');
 	exit;
 }
+$userId = $_SESSION['user_id'];
+
+if (!isset($_REQUEST['memb'])) {
+  //redirect user to own profile page if memb isn't set i.e. if they navigate to profile.php
+  header("Location: profile.php?memb=$userId");
+  exit;
+}
+$memberId = $_REQUEST['memb'];
 
 require_once 'config.php';
 
@@ -15,13 +23,13 @@ if (mysqli_connect_errno()) {
 	fail(mysqli_connect_error());
 }
 
+//get ip and compare to ip in database, if different send to login page
 $query = $mysqli->prepare("SELECT user_session_ip FROM user_info WHERE user_id=?");
-$query->bind_param('s',$_SESSION['user_id']);
+$query->bind_param('i',$userId);
 $query->execute();
 $query->bind_result($userSessionIP);
 $query->fetch();
 $query->close();
-$mysqli->close();
 
 $ip=$_SERVER['REMOTE_ADDR'];
 if($userSessionIP!=$ip){
@@ -31,43 +39,94 @@ if($userSessionIP!=$ip){
 	exit;
 }
 
-if (isset($_POST['addFriend'])){
-	$mysqli=new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
-	if (mysqli_connect_errno()) {
-		fail(mysqli_connect_error());
-	}
-		
-	$query = $mysqli->prepare("INSERT INTO friend (initiator_id, recipient_id, accepted) values (?,?,0)" );
-	$query->bind_param('ii',$_SESSION['user_id'],$_REQUEST['memb']);
-	$query->execute();
-	$query->fetch();
-	$query->close();
-	$mysqli->close();
-	echo 'Friend request sent.';
+($query = $mysqli->prepare("SELECT email,first_name,last_name,gender,birthday FROM user_info WHERE user_id=?"))
+  || fail($mysqli->error);
+$query->bind_param('s',$memberId)
+  || fail($mysqli->error);
+$query->execute()
+  || fail($mysqli->error);
+$query->bind_result($email,$firstName,$lastName,$gender,$birthday)
+  || fail($mysqli->error);
+if (!$query->fetch() && $mysqli->errno) {
+  fail($mysqli->error);
 }
-?>
-<?php
-	$mysqli=new mysqli($databaseHost, $databaseUser, $databasePassword, $databaseName);
-	if (mysqli_connect_errno()) {
-		fail(mysqli_connect_error());
-	}
+$query->close();
+if (!isset($email)) {
+  exit("User doesn't exist");
+}
 
-	$memb_id=$_REQUEST['memb']; //TODO Add injection sanitation and protection.
-	($query = $mysqli->prepare("SELECT user_id,email,first_name,last_name,gender,birthday FROM user_info WHERE user_id=?"))
-	  || fail($mysqli->error);
-	$query->bind_param('s',$memb_id)
-	  || fail($mysqli->error);
-	$query->execute()
-	  || fail($mysqli->error);
-	$query->bind_result($user,$email,$firstName,$lastName,$gender,$birthday)
-	  || fail($mysqli->error);
-	if (!$query->fetch() && $mysqli->errno) {
-	  fail($mysqli->error);
+//0=not friend no requests, 1=user may accept friend, 2=user request pending, 3=friend
+$friend = 0;
+//id user is looking at someone else's profile
+if ($userId != $memberId) {
+  //check if user on this page initiated a request to logged in user, and if accepted
+  $query = $mysqli->prepare("SELECT accepted FROM friend WHERE initiator_id=? AND recipient_id=?");
+  $query->bind_param('ii', $memberId, $userId);
+  $query->execute();
+  $query->bind_result($accepted);
+  $query->fetch();
+  $query->close();
+  
+  if (isset($accepted)) {
+    if ($accepted == 1) {
+      $friend = 3;
+    }
+    else {
+      $friend = 1;
+    }
   }
-	$query->close();
-	$mysqli->close();
-	if (empty($user))
-	  exit("User doesn't exist");
+  else {
+    //check if logged in user initiated request
+    $query = $mysqli->prepare("SELECT accepted FROM friend WHERE initiator_id=? AND recipient_id=?");
+    $query->bind_param('ii', $userId, $memberId);
+    $query->execute();
+    $query->bind_result($accepted);
+    $query->fetch();
+    $query->close();
+    
+    if (isset($accepted)) {
+      if ($accepted == 1) {
+        //possibly improve deleteion performance by using different value for friend
+        //as initiator is different. cost is maintainability
+        $friend = 3;
+      }
+      else {
+        $friend = 2;
+      }
+    }
+  }
+}
+
+//send friend request or add friend
+if (isset($_POST['changeFriend'])) {
+  if ($userId == $memberId) {
+    exit("Can't add self as friend");
+  }
+  
+  if ($friend == 0) {
+    $query = $mysqli->prepare("INSERT INTO friend (initiator_id, recipient_id, accepted) values (?,?,0)");
+	  $query->bind_param('ii',$userId,$memberId);
+	  $query->execute();
+	  $query->close();
+	  $friend = 2;
+  }
+  else if ($friend == 1) {
+    $query = $mysqli->prepare("UPDATE friend SET accepted=1 WHERE initiator_id=? AND recipient_id=?");
+    $query->bind_param('ii', $memberId, $userId);
+    $query->execute();
+	  $query->close();
+    $friend = 3;
+  }
+  else if ($friend == 3) {
+    $query = $mysqli->prepare("DELETE FROM friend WHERE (initiator_id=? AND recipient_id=?) OR (initiator_id=? AND recipient_id=?)");
+    $query->bind_param('iiii', $memberId, $userId, $userId, $memberId);
+    $query->execute();
+	  $query->close();
+    $friend = 0;
+  }
+}
+
+$mysqli->close();
 ?>
 <!DOCTYPE html>
 <meta charset="utf-8">
@@ -85,13 +144,35 @@ if (isset($_POST['addFriend'])){
 	<li>
 		Birthday: <?php echo htmlentities($birthday); ?>
 </ol>
-<?php if ($_SESSION['user_id'] == $memb_id) { ?>
+<?php if ($userId == $memberId) { ?>
 <h3>Edit profile</h3>
 <div>Form here</div>
-<?php }
-  else { ?>
-<form action="<?php echo "profile.php?memb=$memb_id" ?>" method="post" enctype="multipart/form-data">
-	<input type="hidden" name="memb" value="15">
-	<input type="submit" name="" value="Add Friend">
+<?php
+  }
+  else if ($friend == 0) {
+?>
+<form action="<?php echo "profile.php?memb=$memberId"; ?>" method="post">
+  <input type="submit" name="changeFriend" value="Send friend request">
 </form>
-<?php } ?>
+<?php
+  }
+  else if ($friend == 1) {
+?>
+<form action="<?php echo "profile.php?memb=$memberId"; ?>" method="post">
+  <input type="submit" name="changeFriend" value="Accept friend request">
+</form>
+<?php
+  }
+  else if ($friend == 2) {
+?>
+<div>Friend request pending</div>
+<?php
+  }
+  else if ($friend == 3) {
+?>
+<form action="<?php echo "profile.php?memb=$memberId"; ?>" method="post">
+  <input type="submit" name="changeFriend" value="Remove friend">
+</form>
+<?php
+  }
+?>
