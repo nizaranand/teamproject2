@@ -81,7 +81,7 @@ echo "<div>Welcome, " . htmlentities($firstName . " " . $lastName) . "</div>";
   }
   else {
     foreach ($statusArray as $status) {
-      echo "<div>{$status['message']} {$status['first_name']} {$status['last_name']} at {$status['time_posted']}</div>";
+      echo "<div class=\"status\">{$status['message']} <div class=\"byline\">{$status['first_name']} {$status['last_name']} at {$status['time_posted']}</div></div>";
     }
   }
 ?>

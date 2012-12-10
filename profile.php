@@ -303,7 +303,7 @@ $mysqli->close();
 <link rel="stylesheet" href="style.css">
 <?php require_once 'menu.php'?>
 <h2><?php echo htmlentities($firstName . " " . $lastName); ?></h2>
-<ol>
+<ol class="center">
 	<li>
 		Gender: <?php if($gender==0){echo "Undisclosed";}
 		elseif($gender==1){echo "Male";}
@@ -314,14 +314,14 @@ $mysqli->close();
 	<li>
 		Birthday: <?php echo htmlentities($birthday); ?>
 </ol>
-<h3>Latest 5 status updates</h3>
+<h2>Latest 5 status updates</h2>
 <?php
   if (!isset($statusArray)) {
     echo 'No statuses';
   }
   else {
     foreach ($statusArray as $status) {
-      echo "<div>{$status['message']} " . htmlentities($firstName . " " . $lastName) . " at {$status['time_posted']}</div>";
+      echo "<div class=\"status\">{$status['message']} <div class=\"byline\">" .  htmlentities($firstName . " " . $lastName) . " at {$status['time_posted']}</div></div>";
     }
   }
 ?>

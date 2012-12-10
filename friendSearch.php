@@ -125,7 +125,7 @@ $mysqli->close();
     foreach ($membersArray as $member) {
       echo "<div class=\"memberData\">";
       echo "<div class=\"thumbnail\">{$member['user_id']}</div>";
-      echo "<div class=\"firstName\">{$member['first_name']}</div>";
+      echo "<div class=\"firstName\"><a href=\"profile.php?memb={$member['user_id']}\">{$member['first_name']}</a></div>";
       echo "<div class=\"lastName\">{$member['last_name']}</div>";
       echo "<div class=\"email\">{$member['email']}</div>";
       echo "<div class=\"gender\">" . ($member['gender'] == 0 ? "Undisclosed" : ($member['gender'] == 1 ? "Male" : "Female")) . "</div>";

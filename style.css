@@ -13,3 +13,59 @@ li {
   margin: 0;
   padding: 0.1em;
 }
+
+.memberData {
+	background-color: white;
+	color: black;
+	border-radius: 15px;
+	box-shadow: 0 0 10px #888;
+	padding: 3px;
+}
+
+.memberData div {
+  display: inline-block;
+}
+
+.thumbnail {
+  width: 3em;
+}
+
+.firstName, .lastName {
+  width: 7em;
+}
+
+.email {
+  width: 15em;
+}
+
+.gender {
+  width: 8em;
+}
+
+.firstName a {
+  text-decoration: none;
+}
+
+.firstName a:hover {
+  text-decoration: underline; color: green;
+}
+
+.status {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #f1f1f1;
+	color: black;
+	border-radius: 15px;
+	box-shadow: 0 0 10px #888;
+	width: 50%;
+	padding: 3px;
+}
+
+.byline {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  color: darkgreen;
+  float: right;
+}
