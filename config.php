@@ -1,8 +1,8 @@
 <?php
 $databaseHost = '127.0.0.1';
-$databaseUser = 'root';
-$databasePassword = 'rooty';
-$databaseName = 'team_project_2';
+$databaseUser = 'teal';
+$databasePassword = 'team14';
+$databaseName = 'team14';
 //base 2 logarithm used in bcrypt security, higher means more stretching done
 $hashCost = 14;
 //force using built-in functions for portability?

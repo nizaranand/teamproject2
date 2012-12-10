@@ -1,5 +1,5 @@
-create schema if not exists team_project_2;
-use team_project_2;
+create schema if not exists team14;
+use team14;
 create table if not exists user_info(
     user_id int unique primary key not null auto_increment
     , password varchar(60) not null
