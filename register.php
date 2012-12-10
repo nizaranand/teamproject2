@@ -15,8 +15,6 @@ if(isset($_SESSION['user_id'])){
 if (isset($_POST['submit'])) {
   require_once 'PasswordHash.php';
 
-  //TODO error checking (ie failed database connection), input validation/sanitation, response
-
   require_once 'config.php';
 
   $firstName = $_POST['firstName'];
