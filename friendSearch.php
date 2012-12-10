@@ -42,37 +42,52 @@ if (isset($_POST['nameSearch'])) {
   if (empty($lastName)) {
     $firstName = "%";
   }
-
-  $query = $mysqli->prepare("SELECT user_id, email, first_name, last_name, gender, birthday, picture_extension FROM user_info WHERE (first_name LIKE ? AND last_name LIKE ?)");
-  $query->bind_param('ss', $firstName, $lastName);
-  $query->execute();
-  $result = $query->get_result(); //hopefully mysqlnd is installed
-
-  while ($row = $result->fetch_assoc()) {
-    foreach ($row as $key => $value) {
-      $row[$key] = htmlentities($value);
+  
+  try {
+    $dbh = new PDO("mysql:host=$databaseHost;dbname=$databaseName", $databaseUser, $databasePassword);
+    
+    $statement = $dbh->prepare("SELECT user_id, email, first_name, last_name, gender, birthday, picture_extension FROM user_info WHERE (first_name LIKE :firstName AND last_name LIKE :lastName)");
+    $statement->bindParam(':firstName', $firstName, PDO::PARAM_STR);
+    $statement->bindParam(':lastName', $lastName, PDO::PARAM_STR);
+    $statement->execute();
+    
+    while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+      foreach ($row as $key => $value) {
+        $row[$key] = htmlentities($value);
+      }
+      $membersArray[] = $row;
     }
-    $membersArray[] = $row;
+    
+    //close db
+    $dbh = null;
   }
-  $result->free();
-  $query->close();
+  catch(PDOException $e) {
+    fail($e->getMessage());
+  }
 }
 else if (isset($_POST['emailSearch'])) {
   $email = $_POST['email'];
-
-  $query = $mysqli->prepare("SELECT user_id, email, first_name, last_name, gender, birthday, picture_extension FROM user_info WHERE email LIKE ?");
-  $query->bind_param('s', $email);
-  $query->execute();
-  $result = $query->get_result(); //hopefully mysqlnd is installed
-
-  while ($row = $result->fetch_assoc()) {
-    foreach ($row as $key => $value) {
-      $row[$key] = htmlentities($value);
+  
+  try {
+    $dbh = new PDO("mysql:host=$databaseHost;dbname=$databaseName", $databaseUser, $databasePassword);
+    
+    $statement = $dbh->prepare("SELECT user_id, email, first_name, last_name, gender, birthday, picture_extension FROM user_info WHERE email LIKE :email");
+    $statement->bindParam(':email', $email, PDO::PARAM_STR);
+    $statement->execute();
+    
+    while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+      foreach ($row as $key => $value) {
+        $row[$key] = htmlentities($value);
+      }
+      $membersArray[] = $row;
     }
-    $membersArray[] = $row;
+    
+    //close db
+    $dbh = null;
   }
-  $result->free();
-  $query->close();
+  catch(PDOException $e) {
+    fail($e->getMessage());
+  }
 }
 
 $mysqli->close();

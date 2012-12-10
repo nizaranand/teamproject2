@@ -32,25 +32,33 @@ if($userSessionIP!=$ip){
 	exit;
 }
 
-$sql = "SELECT first_name, last_name
-FROM user_info
-WHERE user_id IN
-(SELECT initiator_id FROM friend WHERE (recipient_id=? AND accepted=1)
-UNION
-SELECT recipient_id FROM friend WHERE (initiator_id=? AND accepted=1))";
-$query = $mysqli->prepare($sql);
-$query->bind_param('ii', $userId, $userId);
-$query->execute();
-$result = $query->get_result(); //hopefully mysqlnd is installed
-
-while ($row = $result->fetch_assoc()) {
-  foreach ($row as $key => $value) {
-    $row[$key] = htmlentities($value);
+try {
+  $dbh = new PDO("mysql:host=$databaseHost;dbname=$databaseName", $databaseUser, $databasePassword);
+  
+  $sql = "SELECT first_name, last_name
+  FROM user_info
+  WHERE user_id IN
+  (SELECT initiator_id FROM friend WHERE (recipient_id= :userId AND accepted=1)
+  UNION
+  SELECT recipient_id FROM friend WHERE (initiator_id= :userId AND accepted=1))";
+  
+  $statement = $dbh->prepare($sql);
+  $statement->bindParam(':userId', $userId);
+  $statement->execute();
+  
+  while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+    foreach ($row as $key => $value) {
+      $row[$key] = htmlentities($value);
+    }
+    $friendsArray[] = $row;
   }
-  $friendsArray[] = $row;
+  
+  //close db
+  $dbh = null;
 }
-$result->free();
-$query->close();
+catch(PDOException $e) {
+  fail($e->getMessage());
+}
 
 $mysqli->close();
 ?>

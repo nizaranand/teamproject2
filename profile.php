@@ -273,20 +273,27 @@ else if ($userId != $memberId) {
   }
 }
 
-//retrieve status updates
-$query = $mysqli->prepare("SELECT message, time_posted FROM status_update WHERE user_id=? ORDER BY time_posted DESC LIMIT 5");
-$query->bind_param('i', $memberId);
-$query->execute();
-$result = $query->get_result(); //hopefully mysqlnd is installed
-
-while ($row = $result->fetch_assoc()) {
-  foreach ($row as $key => $value) {
-    $row[$key] = htmlentities($value);
+//retrieve status updates\
+try {
+  $dbh = new PDO("mysql:host=$databaseHost;dbname=$databaseName", $databaseUser, $databasePassword);
+  
+  $statement = $dbh->prepare("SELECT message, time_posted FROM status_update WHERE user_id= :memberId ORDER BY time_posted DESC LIMIT 5");
+  $statement->bindParam(':memberId', $memberId, PDO::PARAM_INT);
+  $statement->execute();
+  
+  while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+    foreach ($row as $key => $value) {
+      $row[$key] = htmlentities($value);
+    }
+    $statusArray[] = $row;
   }
-  $statusArray[] = $row;
+  
+  //close db
+  $dbh = null;
 }
-$result->free();
-$query->close();
+catch(PDOException $e) {
+  fail($e->getMessage());
+}
 
 $mysqli->close();
 ?>
