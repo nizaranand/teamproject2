@@ -80,9 +80,9 @@ echo "<div>Welcome, " . htmlentities($firstName . " " . $lastName) . "</div>";
 	<li>
 		<?php echo "<a href=\"profile.php?memb=".$userId."\">"; ?> View Profile</a>
 	<li>
-		<a href="friends.php">View Friends (Currently not implemented)</a>
+		<a href="friends.php">View Friends</a>
 	<li>
-		<a href="members.php">View Members</a>
+		<a href="friendSearch.php">Search Members</a>
 	<li>
 		<a href="logout.php">Log out</a>
 </ol>
