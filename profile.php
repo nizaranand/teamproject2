@@ -303,6 +303,8 @@ $mysqli->close();
 <link rel="stylesheet" href="style.css">
 <?php require_once 'menu.php'?>
 <h2><?php echo htmlentities($firstName . " " . $lastName); ?></h2>
+<?php if ($friend == 3 || $userId == $memberId) {
+?>
 <ol class="center">
 	<li>
 		Gender: <?php if($gender==0){echo "Undisclosed";}
@@ -324,6 +326,9 @@ $mysqli->close();
       echo "<div class=\"status\">{$status['message']} <div class=\"byline\">" .  htmlentities($firstName . " " . $lastName) . " at {$status['time_posted']}</div></div>";
     }
   }
+?>
+<?php
+  } //if friend or self
 ?>
 <?php
   if (!empty($errorMessage)) {
