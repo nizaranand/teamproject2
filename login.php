@@ -46,8 +46,6 @@ if (isset($_POST['submit'])) {
     $statement = $database->prepare('update user_info set user_session_ip=? where user_id=?');
     $statement->bind_param('ss', $ip,$_SESSION['user_id']);
     $statement->execute();
-    $statement->bind_result($_SESSION['user_id']);
-    $statement->fetch();
     $statement->close();
     $database->close();
     header('Location: home.php');

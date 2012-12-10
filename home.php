@@ -47,7 +47,7 @@ try {
   LIMIT 20";
   
   $statement = $dbh->prepare($sql);
-  $statement->bindParam(':userId', $userId);
+  $statement->bindParam(':userId', $userId, PDO::PARAM_INT);
   $statement->execute();
   
   while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {

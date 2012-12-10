@@ -43,7 +43,7 @@ try {
   SELECT recipient_id FROM friend WHERE (initiator_id= :userId AND accepted=1))";
   
   $statement = $dbh->prepare($sql);
-  $statement->bindParam(':userId', $userId);
+  $statement->bindParam(':userId', $userId, PDO::PARAM_INT);
   $statement->execute();
   
   while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
