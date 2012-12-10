@@ -135,6 +135,14 @@ if (isset($_POST['submit'])) {
     $database->close();
   }
 }
+
+if (isset($_POST['submit'])) {
+  if ($errorMessage === '') {
+    $_SESSION['state']="regSuccess";
+    header('Location: login.php');
+    exit;
+  }
+}
 ?>
 <!DOCTYPE html>
 <meta charset="utf-8">
@@ -143,19 +151,12 @@ if (isset($_POST['submit'])) {
 </head>
 <h1>Social Network</h1>
 <h2>Register a new account</h2>
-<div>Asterisk (*) indicates a required field. </div>
 <?php
-  if (isset($_POST['submit'])) {
-    if ($errorMessage === '') {
-      $_SESSION['state']="regSuccess";
-      header('Location: login.php');
-      exit;
-    }
-    else {
-      echo "<div>$errorMessage</div>";
-    }
+  if (!empty($errorMessage)) {
+    echo "<div>$errorMessage</div>";
   }
 ?>
+<div>Asterisk (*) indicates a required field. </div>
 <form action="<?php echo htmlentities($_SERVER['PHP_SELF']);?>" method="post" enctype="multipart/form-data">
   <ol>
     <li>
