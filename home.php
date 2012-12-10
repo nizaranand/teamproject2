@@ -48,6 +48,9 @@ $query->execute();
 $result = $query->get_result(); //hopefully mysqlnd is installed
 
 while ($row = $result->fetch_assoc()) {
+  foreach ($row as $key => $value) {
+    $row[$key] = htmlentities($value);
+  }
   $statusArray[] = $row;
 }
 $result->free();
@@ -61,7 +64,6 @@ $mysqli->close();
 <link rel="stylesheet" href="style.css">
 <?php
 echo "<div>Welcome, " . htmlentities($firstName . " " . $lastName) . "</div>";
-$_SESSION['profile_id']=$_SESSION['user_id'];
 ?>
 <h3>Latest 20 personal and friends status updates</h3>
 <?php
@@ -70,7 +72,7 @@ $_SESSION['profile_id']=$_SESSION['user_id'];
   }
   else {
     foreach ($statusArray as $status) {
-      echo "<div>{$status['message']} " . htmlentities($status['first_name'] . " " . $status['last_name']) . " at {$status['time_posted']}</div>";
+      echo "<div>{$status['message']} {$status['first_name']} {$status['last_name']}f at {$status['time_posted']}</div>";
     }
   }
 ?>

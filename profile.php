@@ -280,6 +280,9 @@ $query->execute();
 $result = $query->get_result(); //hopefully mysqlnd is installed
 
 while ($row = $result->fetch_assoc()) {
+  foreach ($row as $key => $value) {
+    $row[$key] = htmlentities($value);
+  }
   $statusArray[] = $row;
 }
 $result->free();
@@ -291,7 +294,7 @@ $mysqli->close();
 <meta charset="utf-8">
 <title>Profile</title>
 <link rel="stylesheet" href="style.css">
-<h2><?php echo htmlentities($firstName ." ". $lastName); ?></h2>
+<h2><?php echo htmlentities($firstName . " " . $lastName); ?></h2>
 <ol>
 	<li>
 		Gender: <?php if($gender==0){echo "Undisclosed";}
