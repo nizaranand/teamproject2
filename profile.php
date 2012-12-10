@@ -15,6 +15,7 @@ if (!isset($_REQUEST['memb'])) {
   exit;
 }
 $memberId = $_REQUEST['memb'];
+//user is person executing code, member is owner of profile page passed in ?memb=
 
 require_once 'config.php';
 
@@ -95,36 +96,61 @@ if ($userId != $memberId) {
       }
     }
   }
+
+  //send friend request or add friend
+  if (isset($_POST['changeFriend'])) {
+    if ($friend == 0) {
+      $query = $mysqli->prepare("INSERT INTO friend (initiator_id, recipient_id, accepted) values (?,?,0)");
+	    $query->bind_param('ii',$userId,$memberId);
+	    $query->execute();
+	    $query->close();
+	    $friend = 2;
+    }
+    else if ($friend == 1) {
+      $query = $mysqli->prepare("UPDATE friend SET accepted=1 WHERE initiator_id=? AND recipient_id=?");
+      $query->bind_param('ii', $memberId, $userId);
+      $query->execute();
+	    $query->close();
+      $friend = 3;
+    }
+    else if ($friend == 3) {
+      $query = $mysqli->prepare("DELETE FROM friend WHERE (initiator_id=? AND recipient_id=?) OR (initiator_id=? AND recipient_id=?)");
+      $query->bind_param('iiii', $memberId, $userId, $userId, $memberId);
+      $query->execute();
+	    $query->close();
+      $friend = 0;
+    }
+  }
+}
+else if ($userId == $memberId) {
+  if (isset($_POST['statusUpdate'])) {
+    $status = $_POST['status'];
+    $errorMessage = '';
+    if (strlen($status) <= 0 || strlen($status) > 255) {
+      $errorMessage .= 'String length must be between 1 and 255 characters inclusive';
+    }
+    
+    if ($errorMessage === '') {
+      $query = $mysqli->prepare("INSERT INTO status_update (user_id, message) values (?,?)");
+	    $query->bind_param('is',$userId, $status);
+	    $query->execute();
+	    $query->close();
+    }
+  }
 }
 
-//send friend request or add friend
-if (isset($_POST['changeFriend'])) {
-  if ($userId == $memberId) {
-    exit("Can't add self as friend");
-  }
-  
-  if ($friend == 0) {
-    $query = $mysqli->prepare("INSERT INTO friend (initiator_id, recipient_id, accepted) values (?,?,0)");
-	  $query->bind_param('ii',$userId,$memberId);
-	  $query->execute();
-	  $query->close();
-	  $friend = 2;
-  }
-  else if ($friend == 1) {
-    $query = $mysqli->prepare("UPDATE friend SET accepted=1 WHERE initiator_id=? AND recipient_id=?");
-    $query->bind_param('ii', $memberId, $userId);
-    $query->execute();
-	  $query->close();
-    $friend = 3;
-  }
-  else if ($friend == 3) {
-    $query = $mysqli->prepare("DELETE FROM friend WHERE (initiator_id=? AND recipient_id=?) OR (initiator_id=? AND recipient_id=?)");
-    $query->bind_param('iiii', $memberId, $userId, $userId, $memberId);
-    $query->execute();
-	  $query->close();
-    $friend = 0;
-  }
+//retrieve status updates
+//using direct query as user_id is never writeable by user
+$query = $mysqli->prepare("SELECT message, time_posted FROM status_update WHERE user_id=? ORDER BY time_posted DESC LIMIT 5");
+$query->bind_param('i', $memberId);
+$query->execute();
+$result = $query->get_result();
+
+while ($row = $result->fetch_assoc()) {
+  $statusArray[] = $row;
 }
+$result->free();
+$query->close();
 
 $mysqli->close();
 ?>
@@ -144,9 +170,26 @@ $mysqli->close();
 	<li>
 		Birthday: <?php echo htmlentities($birthday); ?>
 </ol>
+<h3>Latest 5 status updates</h3>
+<?php
+  if (!isset($statusArray)) {
+    echo 'No statuses';
+  }
+  else {
+    foreach ($statusArray as $status) {
+      echo "<div>{$status['message']} by $firstName $lastName at {$status['time_posted']}</div>";
+    }
+  }
+?>
 <?php if ($userId == $memberId) { ?>
-<h3>Edit profile</h3>
-<div>Form here</div>
+<h3>Post status update</h3>
+<form action="<?php echo "profile.php?memb=$memberId"; ?>" method="post">
+  <div>
+    <textarea maxlength="255" cols="50" rows="6" name="status"></textarea>
+    <br>
+    <input type="submit" name="statusUpdate" value="Submit">
+  </div>
+</form>
 <?php
   }
   else if ($friend == 0) {
